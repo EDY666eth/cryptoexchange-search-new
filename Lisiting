@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>DigiFinex 競品戰情室</title>
+    <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #161a1e; --border: #2b3139; --text: #eaecef; --sub: #848e9c;
+            --binance-color: #FCD535; --okx-color: #FFFFFF; --bybit-color: #FFB11A; 
+            --bitget-color: #00E4FF; --bingx-color: #0050FF; --gate-color: #17E6A1; --lbank-color: #F5C136;
+        }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; min-height: 100vh; }
+        header { padding: 30px; text-align: center; border-bottom: 1px solid var(--border); width: 100%; margin-bottom: 20px; background: linear-gradient(to bottom, #1e2329, var(--bg)); }
+        h1 { margin: 0; font-size: 2.5em; font-weight: 800; color: #fff; letter-spacing: 2px; }
+        
+        .board-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; width: 98%; padding-bottom: 80px; }
+        .exchange-col { background: var(--card); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s; }
+        .exchange-col:hover { transform: translateY(-5px); }
+
+        /* 標題加粗與代表色 */
+        .col-header { padding: 20px; border-bottom: 4px solid; background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center; }
+        .exchange-name { font-size: 1.6em; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        
+        #binance-col .exchange-name { color: var(--binance-color); } #binance-col .col-header { border-bottom-color: var(--binance-color); }
+        #okx-col .exchange-name { color: var(--okx-color); } #okx-col .col-header { border-bottom-color: var(--okx-color); }
+        #bybit-col .exchange-name { color: var(--bybit-color); } #bybit-col .col-header { border-bottom-color: var(--bybit-color); }
+        #bitget-col .exchange-name { color: var(--bitget-color); } #bitget-col .col-header { border-bottom-color: var(--bitget-color); }
+        #bingx-col .exchange-name { color: var(--bingx-color); } #bingx-col .col-header { border-bottom-color: var(--bingx-color); }
+        #gate-col .exchange-name { color: var(--gate-color); } #gate-col .col-header { border-bottom-color: var(--gate-color); }
+        #lbank-col .exchange-name { color: var(--lbank-color); } #lbank-col .col-header { border-bottom-color: var(--lbank-color); }
+
+        .announcement-list { list-style: none; padding: 0; margin: 0; }
+        .announcement-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: block; text-decoration: none; transition: background 0.2s; }
+        .announcement-item:hover { background: #2b3139; }
+        
+        .item-title { color: var(--text) !important; font-size: 1.05em; line-height: 1.5; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .announcement-item:hover .item-title { color: #fff !important; }
+        .tag-new { background: rgba(242,169,0,0.2); color: #f2a900; font-size: 0.75em; padding: 3px 10px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; display: inline-block; }
+        .state-msg { padding: 60px; text-align: center; color: var(--sub); font-size: 0.9em; }
+        footer { position: fixed; bottom: 0; background: #1e2329; width: 100%; text-align: center; padding: 15px; border-top: 1px solid var(--border); font-size: 0.85em; color: var(--sub); }
+    </style>
+</head>
+<body>
+    <header><h1>DigiFinex 競品情報看板</h1></header>
+    <div class="board-container">
+        <div class="exchange-col" id="binance-col"><div class="col-header"><div class="exchange-name">Binance</div><div id="time-binance" style="font-size:0.75em">--</div></div><ul class="announcement-list" id="list-binance"></ul></div>
+        <div class="exchange-col" id="okx-col"><div class="col-header"><div class="exchange-name">OKX</div><div id="time-okx" style="font-size:0.75em">--</div></div><ul class="announcement-list" id="list-okx"></ul></div>
+        <div class="exchange-col" id="bybit-col"><div class="col-header"><div class="exchange-name">Bybit</div><div id="time-bybit" style="font-size:0.75em">--</div></div><ul class="announcement-list" id="list-bybit"></ul></div>
+        <div class="exchange-col" id="bitget-col"><div class="col-header"><div class="exchange-name">Bitget</div><div id="time-bitget" style="font-size:0.75em">--</div></div><ul class="announcement-list" id="list-bitget"></ul></div>
+        <div class="exchange-col" id="bingx-col"><div class="col-header"><div class="exchange-name">BingX</div><div id="time-bingx" style="font-size:0.75em">--</div></div><ul class="announcement-list" id="list-bingx"></ul></div>
+        <div class="exchange-col" id="gate-col"><div class="col-header"><div class="exchange-name">Gate.io</div><div id="time-gate" style="font-size:0.75em">--</div></div><ul class="announcement-list" id="list-gate"></ul></div>
+        <div class="exchange-col" id="lbank-col"><div class="col-header"><div class="exchange-name">LBank</div><div id="time-lbank" style="font-size:0.75em">--</div></div><ul class="announcement-list" id="list-lbank"></ul></div>
+    </div>
+    <footer>DigiFinex Team - Eddy</footer>
+
+    <script>
+        const EXCHANGES = ['binance', 'okx', 'bybit', 'bitget', 'bingx', 'gate', 'lbank'];
+        let converter = null; try { converter = OpenCC.Converter({ from: 'cn', to: 'tw' }); } catch(e){}
+
+        async function fetchAnn(id) {
+            try {
+                const res = await fetch(`http://localhost:3000/api/${id}`);
+                const json = await res.json();
+                return json.success ? json.data : null;
+            } catch(e) { return null; }
+        }
+
+        async function render(id) {
+            const list = document.getElementById(`list-${id}`);
+            const timeEl = document.getElementById(`time-${id}`);
+            const items = await fetchAnn(id);
+            
+            if (!items || items.length === 0) { 
+                list.innerHTML = '<div class="state-msg">⚠️ 正在重新掃描...</div>'; 
+                return; 
+            }
+            
+            list.innerHTML = '';
+            items.forEach(i => {
+                let t = converter ? converter(i.title) : i.title;
+                const isNew = (t.includes('上線') || t.includes('活動') || t.includes('質押'));
+                const tag = isNew ? '<div class="tag-new">🔥 NEW</div>' : '';
+                const a = document.createElement('a');
+                a.className = 'announcement-item'; a.href = i.link; a.target = '_blank';
+                a.innerHTML = `${tag}<div class="item-title">${t}</div><div style="font-size:0.8em; color:#848e9c; margin-top:8px;">🌟 官方同步中</div>`;
+                list.appendChild(a);
+            });
+            timeEl.innerText = new Date().toLocaleTimeString();
+        }
+
+        function init() { EXCHANGES.forEach(id => render(id)); }
+        window.onload = init; setInterval(init, 300000); // 5分鐘刷新一次
+    </script>
+</body>
+</html>
